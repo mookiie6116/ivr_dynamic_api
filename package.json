@@ -1,0 +1,29 @@
+{
+  "name": "ivr_dynamic_api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app",
+    "dev": "nodemon app"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mookiie6116/ivr_dynamic_api.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mookiie6116/ivr_dynamic_api/issues"
+  },
+  "homepage": "https://github.com/mookiie6116/ivr_dynamic_api#readme",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "moment": "^2.24.0",
+    "mssql": "^5.1.0",
+    "nodemon": "^1.19.2"
+  }
+}
