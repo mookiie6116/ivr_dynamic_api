@@ -1,20 +1,13 @@
 const moment = require('moment');
+const configs = require('config');
+let config = configs.get('ivr_database');
 moment.locale('th');
 
 var mssql = require('mssql')
-const config = {
-    user: 'ui_user',
-    password: 'Terr@b!tP@ssw0rd',
-    server: '172.18.10.16',
-    database: 'IVR_DYNAMIC',
-    options: {
-        encrypt: true // Use this if you're on Windows Azure
-    }
-}
 module.exports = {
     connect: function () {
         mssql.connect(config, function (err) {
-            console.log(moment().format('DD/MM/YYYY HH:mm:ss') + " - connected ");
+            console.log(moment().format('DD/MM/YYYY HH:mm:ss') + " - connected "+config.database);
             if (err) console.log(moment().format('DD/MM/YYYY HH:mm:ss') + " - Error : " + err);
         })
     },
@@ -30,6 +23,7 @@ module.exports = {
         });
     },
     disconnect: function () {
+        console.log(moment().format('DD/MM/YYYY HH:mm:ss') + " - disconnect "+config.database);
         mssql.close();
     }
 

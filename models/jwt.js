@@ -15,7 +15,7 @@ module.exports = {
       issuer: i,
       subject: s,
       audience: a,
-      expiresIn: "1 days", // 1 hour validity  minute
+      expiresIn: "1 years", // 1 years / hour / minute / days / default ms
       algorithm: "RS256"
     };
     return jwt.sign(payload, privateKEY, signOptions);
@@ -40,10 +40,10 @@ module.exports = {
         return res
           .status(403)
           .send({ auth: false, message: "Failed to authenticate token." });
+      req.uuid = decoded.uuid;
       req.username = decoded.username;
       req.fname = decoded.fname;
       req.lname = decoded.lname;
-      req.company_uuid = decoded.company_uuid;
       next();
     });
   }

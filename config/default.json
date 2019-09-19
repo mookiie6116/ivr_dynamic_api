@@ -1,0 +1,13 @@
+{
+  "ver" : 0.1,
+  "port" : "9004",
+  "ivr_database" : {
+    "user": "ui_user",
+    "password": "Terr@b!tP@ssw0rd",
+    "server": "172.18.10.16",
+    "database": "IVR_DYNAMIC",
+    "options": {
+        "encrypt": true
+    }
+  }
+}

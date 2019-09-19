@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node app",
-    "dev": "nodemon app"
+    "dev": "nodemon app",
+    "prod": "SET NODE_ENV=production& node app.js"
   },
   "repository": {
     "type": "git",
@@ -20,6 +21,7 @@
   "homepage": "https://github.com/mookiie6116/ivr_dynamic_api#readme",
   "dependencies": {
     "body-parser": "^1.19.0",
+    "config": "^3.2.2",
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "jsonwebtoken": "^8.5.1",
