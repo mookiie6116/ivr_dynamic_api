@@ -8,7 +8,7 @@ const moment = require('moment');
 const md5 = require("md5")
 
 var urlencodedParser = bodyParser.urlencoded({
-  extended: false
+  extended: true
 });
 
 router.post("/", jwt.verify, urlencodedParser, function (req, res, next) {
@@ -30,6 +30,21 @@ router.post("/", jwt.verify, urlencodedParser, function (req, res, next) {
         res.status(201).json()
       })
     })
+  })
+})
+
+router.get("/", jwt.verify, urlencodedParser, function (req, res, next) {
+  let sql = `SELTCT * FROM users`
+  ivr.query(sql, function (response) {
+    res.status(200).json(response)
+  })
+})
+
+router.get("/:id", jwt.verify, urlencodedParser, function (req, res, next) {
+  let id = req.params.id
+  let sql = `SELTCT * FROM users WHERE uuid = ${id}`
+  ivr.query(sql, function (response) {
+    res.status(200).json(response)
   })
 })
 

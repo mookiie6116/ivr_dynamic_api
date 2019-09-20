@@ -6,7 +6,7 @@ const bodyParser = require("body-parser");
 const md5 = require("md5")
 
 var urlencodedParser = bodyParser.urlencoded({
-  extended: false
+  extended: true
 });
 
 router.post("/login", urlencodedParser, function (req, res, next) {

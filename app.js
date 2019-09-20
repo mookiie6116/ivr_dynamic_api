@@ -7,12 +7,11 @@ const config = require('config');
 let ver = config.get('ver');
 var ivr = require("./models/connect_ivr");
 
-
 const http = require("http").Server(app);
 const port = process.env.PORT || config.get('port');
 ivr.connect()
+app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: false}));
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
 
