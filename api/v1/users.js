@@ -34,7 +34,7 @@ router.post("/", jwt.verify, urlencodedParser, function (req, res, next) {
 })
 
 router.get("/", jwt.verify, urlencodedParser, function (req, res, next) {
-  let sql = `SELTCT * FROM users`
+  let sql = `SELECT * FROM users`
   ivr.query(sql, function (response) {
     res.status(200).json(response)
   })
@@ -42,7 +42,7 @@ router.get("/", jwt.verify, urlencodedParser, function (req, res, next) {
 
 router.get("/:id", jwt.verify, urlencodedParser, function (req, res, next) {
   let id = req.params.id
-  let sql = `SELTCT * FROM users WHERE uuid = ${id}`
+  let sql = `SELECT * FROM users WHERE uuid = ${id}`
   ivr.query(sql, function (response) {
     res.status(200).json(response)
   })

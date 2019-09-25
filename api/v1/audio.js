@@ -36,4 +36,11 @@ router.post("/upload", jwt.verify, upload.single('audio'), function (req, res, n
   fs.unlink('uploads/' + file.filename, function (err) {})
   res.status(200).json()
 })
+
+router.get("/",jwt.verify,function (req,res,next) {
+  let sql = `SELECT * FROM voice_config`
+  ivr.query(sql, function (response) {
+    res.status(200).json(response)
+  })
+})
 module.exports = router;
