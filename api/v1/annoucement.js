@@ -44,7 +44,7 @@ router.post("/", jwt.verify, urlencodedParser, function (req, res, next) {
                         modified_dt = '${modified_dt}'
                     WHERE annoucement_id = '${req.body.annoucement_id}'`
         ivr.query(sql, function (response) {
-          if (response) res.status(400).json({ alert: alertError })
+          if (response) res.status(200).json({ alert: alertError })
           res.status(200).json({ alert: alertSuccess })
         })
       }
@@ -76,7 +76,7 @@ router.put("/", jwt.verify, urlencodedParser, function (req, res, next) {
                   modified_dt = '${modified_dt}'
               WHERE annoucement_id = '${annoucement_id}'`
   ivr.query(sql, function (response) {
-    if (response) res.status(400).json({ alert: alertError })
+    if (response) res.status(200).json({ alert: alertError })
     res.status(200).json({ alert: alertSuccess })
   })
 })
@@ -92,7 +92,7 @@ router.get("/", jwt.verify, urlencodedParser, function (req, res, next) {
               FROM annoucements a
               LEFT JOIN users b ON a.created_by = b.uuid
               LEFT JOIN users c ON a.modified_by = c.uuid
-              WHERE isDelete = '0'`
+              WHERE a.isDelete = '0'`
   ivr.query(sql, function (response) {
     res.status(200).json(response)
   })
