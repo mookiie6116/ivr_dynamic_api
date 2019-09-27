@@ -77,7 +77,7 @@ router.get("/", jwt.verify, urlencodedParser, function (req, res, next) {
                   a.action_name AS Action, 
                   sr.service_action_value ,
                   CASE
-                    WHEN sr.service_action_id=1 THEN (SELECT voice_name FROM voice_config WHERE voice_id = sr.service_action_value)
+                    WHEN sr.service_action_id=1 THEN (SELECT annoucement_name FROM annoucements WHERE annoucement_id = sr.service_action_value)
                     WHEN sr.service_action_id=2 THEN (SELECT name FROM ivr_script WHERE ivr_id = sr.service_action_value)
                     ELSE sr.service_action_value
                   END as [Values]

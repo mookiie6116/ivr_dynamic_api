@@ -35,24 +35,22 @@ router.post("/", jwt.verify, urlencodedParser, function (req, res, next) {
             VALUES ('${voice_id}', '${voice_name}', '${voice_description}','${audioName}', '${audio}', '${created_dt}', '${created_by}')`
   ivr.query(sql, function (response) {
     if (response) res.status(200).json({ alert: alertError })
-    res.status(200).json({ alert: alertSuccess })
+    res.status(200).json({ alert: alertSuccess,voice_id:voice_id})
   })
 })
 
-router.post("/upload", jwt.verify, function (req, res, next) {
+router.post("/upload/:id", jwt.verify, function (req, res, next) {
+  var id = req.params.id;
   var form = new formidable.IncomingForm();
   form.parse(req, function (err, fields, files) {
-    console.log(files.audio);
     var audio = files.audio
     var oldpath = audio.path;
-    var fileExtention = audio.name.split(".")[1];
-    var newpath = path.resolve("uploads") + "/" + audio.name;
+    var newfile = `${id}.${audio.name.split(".")[1]}`;
+    var newpath = path.resolve("uploads") + "/" + newfile;
       fs.move(oldpath, newpath, function(err) {
-        if (err) {
-          res.status(200).json({ alert: alertError })
-        }
+        if (err) {}
         ftp.upload(newpath,audio.name)
-        res.status(200).json({ alert: alertSuccess })
+        res.status(204).send()
       });
   })
 })

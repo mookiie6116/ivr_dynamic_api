@@ -16,17 +16,17 @@
     "username": "root",
     "password": "aspect",
     "options":{
-      "flags": "w", 
-      "encoding": null, 
-      "mode": "0o666", 
-      "autoClose": true 
+      "flags": "w",
+      "encoding": null,
+      "mode": "0o666",
+      "autoClose": true
     }
   },
   "ftp_path":"/recordings/audio/LocStore1/tn02/M3-UserDef",
   "ftp_options":{
-    "flags": "w", 
-    "encoding": null, 
-    "mode": "0o666", 
-    "autoClose": true 
+    "flags": "w",
+    "encoding": null,
+    "mode": "0o666",
+    "autoClose": true
   }
 }
