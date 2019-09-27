@@ -49,4 +49,16 @@ router.put("/reset_password", jwt.verify, urlencodedParser, function (req, res, 
   })
 })
 
+router.get("/me", jwt.verify, urlencodedParser, function (req, res, next) {
+  let uuid = req.uuid;
+  let sql = `SELECT username,	fname,	lname	 FROM users WHERE uuid = '${uuid}'`
+  ivr.query(sql, function (response) {
+    if (response.length) {
+      res.status(200).json(response[0])
+    }else{
+      res.status(404).json("data not found!")
+    }
+  })
+})
+
 module.exports = router;

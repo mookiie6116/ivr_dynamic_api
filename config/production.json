@@ -1,4 +1,32 @@
 {
-  "ver" : 1,
-  "port" : "9004"
+  "ver" : 0.1,
+  "port" : "8701",
+  "ivr_database" : {
+    "user": "ui_user",
+    "password": "Terr@b!tP@ssw0rd",
+    "server": "172.18.10.16",
+    "database": "IVR_DYNAMIC",
+    "options": {
+        "encrypt": true
+    }
+  },
+  "ftp":{
+    "host": "172.18.8.21",
+    "port": "22",
+    "username": "root",
+    "password": "aspect",
+    "options":{
+      "flags": "w", 
+      "encoding": null, 
+      "mode": "0o666", 
+      "autoClose": true 
+    }
+  },
+  "ftp_path":"/recordings/audio/LocStore1/tn02/M3-UserDef",
+  "ftp_options":{
+    "flags": "w", 
+    "encoding": null, 
+    "mode": "0o666", 
+    "autoClose": true 
+  }
 }
