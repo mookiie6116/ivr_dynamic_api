@@ -4,22 +4,12 @@ const ivr = require("../../models/connect_ivr");
 const bodyParser = require("body-parser");
 const jwt = require("../../models/jwt");
 const uuidv1 = require('uuid/v1');
+const helper = require('../helper/helper')
 const moment = require('moment');
 
 var urlencodedParser = bodyParser.urlencoded({
   extended: true
 });
-
-const alertSuccess = {
-  title: 'Success',
-  description: 'Save Success',
-  variant: "success"
-}
-const alertError = {
-  title: 'Error',
-  description: 'Something Wrong',
-  variant: "danger"
-}
 
 router.post("/", jwt.verify, urlencodedParser, function (req, res, next) {
   let { name, description, voice_id, timeout, invalid_retries, invalid_retries_voice_id, invalid_voice_id, invalid_action, timeout_retries, timeout_retries_voice_id, timeout_voice_id, timeout_action, keyDetail } = req.body
@@ -34,7 +24,7 @@ router.post("/", jwt.verify, urlencodedParser, function (req, res, next) {
         let modified_dt = moment.utc().format('YYYY-MM-DD HH:mm:ss');
         let promise = new Promise((resolve, reject) => {
           let sql = ` UPDATE ivr_script 
-                    SET description = '${description}',
+                    SET description = '${description == undefined ? "" : description}',
                         voice_id = '${voice_id}',
                         timeout = '${timeout}',
                         invalid_retries = '${invalid_retries}',
@@ -79,7 +69,9 @@ router.post("/", jwt.verify, urlencodedParser, function (req, res, next) {
             }
           })
         }).then(function (json) {
-          res.status(200).json({ alert: alertSuccess })
+          res.status(200).json({
+            alert: helper.alertToast(`IVR`, `Update IVR Successfully`, `success`),
+          })
         })
       }
     })
@@ -87,7 +79,7 @@ router.post("/", jwt.verify, urlencodedParser, function (req, res, next) {
     return new Promise((resolve, reject) => {
       let ivr_id = uuidv1()
       let sql = `INSERT INTO ivr_script (ivr_id, name, description, voice_id, timeout, invalid_retries, invalid_retries_voice_id, invalid_voice_id, invalid_action_id, invalid_action_value, timeout_retries, timeout_retries_voice_id, timeout_voice_id, timeout_action_id, timeout_action_value, created_by, created_dt,modified_by,modified_dt) 
-      VALUES ('${ivr_id}', '${name}', '${description}', '${voice_id}', '${timeout}', '${invalid_retries}', '${invalid_retries_voice_id}', '${invalid_voice_id}', '${invalid_action.key_action_id}', '${invalid_action.key_action_value}', '${timeout_retries}', '${timeout_retries_voice_id}', '${timeout_voice_id}', '${timeout_action.key_action_id}', '${timeout_action.key_action_value}', '${created_by}', '${created_dt}',  '${created_by}', '${created_dt}')`
+      VALUES ('${ivr_id}', '${name}', '${description == undefined ? "" : description}', '${voice_id}', '${timeout}', '${invalid_retries}', '${invalid_retries_voice_id}', '${invalid_voice_id}', '${invalid_action.key_action_id}', '${invalid_action.key_action_value}', '${timeout_retries}', '${timeout_retries_voice_id}', '${timeout_voice_id}', '${timeout_action.key_action_id}', '${timeout_action.key_action_value}', '${created_by}', '${created_dt}',  '${created_by}', '${created_dt}')`
       ivr.query(sql, function (response) {
         resolve(ivr_id)
       })
@@ -111,7 +103,9 @@ router.post("/", jwt.verify, urlencodedParser, function (req, res, next) {
       }
     })
   }).then(function (json) {
-    res.status(201).json({ alert: alertSuccess })
+    res.status(201).json({
+      alert: helper.alertToast(`IVR`, `Create IVR Successfully`, `success`),
+    })
   })
 })
 
@@ -166,7 +160,9 @@ router.put("/", jwt.verify, urlencodedParser, function (req, res, next) {
       }
     })
   }).then(function (json) {
-    res.status(200).json({ alert: alertSuccess })
+    res.status(200).json({
+      alert: helper.alertToast(`UPDATE IVR`, `Update IVR Success`, `success`),
+    })
   })
 })
 
@@ -204,14 +200,13 @@ router.get("/:id", jwt.verify, urlencodedParser, function (req, res, next) {
     return new Promise((resolve, reject) => {
       let sql_keyDetail = `SELECT * FROM ivr_script_key_detail WHERE ivr_id ='${id}'`
       ivr.query(sql_keyDetail, function (response) {
-        json.invalid_action = { key_action_id: json.invalid_action_id, key_action_value: json.invalid_action_value, external: json.invalid_action_value }
-        json.timeout_action = { key_action_id: json.timeout_action_id, key_action_value: json.timeout_action_value, external: json.timeout_action_value }
+        json.invalid_action = { key_action_id: json.invalid_action_id, key_action_value: json.invalid_action_value, external: json.invalid_action_id == 5 ? json.invalid_action_value : '' }
+        json.timeout_action = { key_action_id: json.timeout_action_id, key_action_value: json.timeout_action_value, external: json.invalid_action_id == 5 ? json.invalid_action_value : '' }
         json.keyDetail = response
         resolve(json)
       })
     })
   }).then(function (json) {
-    console.log(json);
     res.status(200).json(json)
   })
 })
@@ -226,8 +221,8 @@ router.delete("/:id", jwt.verify, urlencodedParser, function (req, res, next) {
                   modified_dt = '${modified_dt}' 
               WHERE ivr_id = '${req.params.id}'`
   ivr.query(sql, function (response) {
-    if (response) res.status(200).json({ alert: alertError })
-    res.status(200).json({ alert: alertSuccess })
+    if (response) { res.status(200).json({ alert: helper.alertToast(`IVR`, `Delete IVR Error`,`danger`) }) }
+    else { res.status(200).json({ alert: helper.alertToast(`IVR`, `Deleted IVR Successfully`, `success`) }) }
   })
 })
 module.exports = router;

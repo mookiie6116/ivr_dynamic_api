@@ -4,6 +4,7 @@ const ivr = require("../../models/connect_ivr");
 const jwt = require("../../models/jwt");
 const bodyParser = require("body-parser");
 const md5 = require("md5")
+const helper = require('../helper/helper')
 
 var urlencodedParser = bodyParser.urlencoded({
   extended: true
@@ -16,36 +17,26 @@ router.post("/login", urlencodedParser, function (req, res, next) {
     if (response.length) {
       const token = jwt.sign(response[0]);
       res.status(200).json({
-        alert: {
-          title: 'Success',
-          description: 'Login Success',
-          variant: "success"
-        },
+        alert: helper.alertToast(`LOGIN`, `Login Success`, `success`),
         token: token
       })
     } else {
-      res.status(400).json()
+      res.status(200).json({
+        alert: helper.alertToast(`LOGIN`, `Username OR Password Incorrect`,`danger`),
+      })
     }
   })
 })
 
 router.get("/logout", jwt.verify, urlencodedParser, function (req, res, next) {
   res.status(200).json({
-    alert: {
-      title: 'Success',
-      description: 'Logout Success',
-      variant: "success"
-    }
+    alert: helper.alertToast(`LOGOUT`, `Logout Success`, `success`),
   })
 })
 
 router.put("/reset_password", jwt.verify, urlencodedParser, function (req, res, next) {
   res.status(200).json({
-    alert: {
-      title: 'Success',
-      description: 'Reset Password Success',
-      variant: "success"
-    }
+    alert: helper.alertToast(`RESET PASSWORD`, `Reset Password Success`, `success`),
   })
 })
 
@@ -55,7 +46,7 @@ router.get("/me", jwt.verify, urlencodedParser, function (req, res, next) {
   ivr.query(sql, function (response) {
     if (response.length) {
       res.status(200).json(response[0])
-    }else{
+    } else {
       res.status(404).json("data not found!")
     }
   })

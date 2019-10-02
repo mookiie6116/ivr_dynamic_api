@@ -4,24 +4,14 @@ const ivr = require("../../models/connect_ivr");
 const bodyParser = require("body-parser");
 const jwt = require("../../models/jwt");
 const moment = require('moment');
+const helper = require('../helper/helper')
 
 var urlencodedParser = bodyParser.urlencoded({
   extended: true
 });
 
-const alertSuccess = {
-  title: 'Success',
-  description: 'Save Success',
-  variant: "success"
-}
-const alertError = {
-  title: 'Error',
-  description: 'Something Wrong',
-  variant: "danger"
-}
-
 router.post("/", jwt.verify, urlencodedParser, function (req, res, next) {
-  let { service_id, service_action_id, service_action_value } = req.body
+  let { no, service_id, service_action_id, service_action_value } = req.body
   let created_by = req.uuid;
   let created_dt = moment.utc().format('YYYY-MM-DD HH:mm:ss');
   let promise = new Promise((resolve, reject) => {
@@ -36,10 +26,18 @@ router.post("/", jwt.verify, urlencodedParser, function (req, res, next) {
                         service_action_value = '${service_action_value}', 
                         modified_by = '${uuid}', 
                         modified_dt = '${modified_dt}' 
-                    WHERE service_id = '${service_id}'`
+                    WHERE no = '${no}'`
         ivr.query(sql, function (response) {
-          if (response) res.status(200).json({ alert: alertError })
-          res.status(200).json({ alert: alertSuccess })
+          if (response) {
+            res.status(200).json({
+              alert: helper.alertToast(`SERVICE`, `Update Service Error`,`danger`),
+            })
+          }
+          else {
+            res.status(200).json({
+              alert: helper.alertToast(`SERVICE`, `Update Service Successfully`, `success`),
+            })
+          }
         })
       }
     })
@@ -48,8 +46,16 @@ router.post("/", jwt.verify, urlencodedParser, function (req, res, next) {
       let sql = `INSERT INTO service_routing (service_id, service_action_id, service_action_value, created_by, created_dt, modified_by, modified_dt) 
                   VALUES ('${service_id}', '${service_action_id}', '${service_action_value}', '${created_by}', '${created_dt}', '${created_by}', '${created_dt}')`
       ivr.query(sql, function (response) {
-        if (response) res.status(200).json({ alert: alertError })
-        res.status(201).json({ alert: alertSuccess })
+        if (response) {
+          res.status(200).json({
+            alert: helper.alertToast(`SERVICE`, `Create Service Error`,`danger`),
+          })
+        }
+        else {
+          res.status(200).json({
+            alert: helper.alertToast(`SERVICE`, `Create Service Successfully`, `success`),
+          })
+        }
       })
     })
   })
@@ -62,23 +68,32 @@ router.delete("/:id", jwt.verify, urlencodedParser, function (req, res, next) {
               SET isDelete = '1', 
                   modified_by = '${uuid}', 
                   modified_dt = '${modified_dt}' 
-              WHERE service_id = '${req.params.id}'`
+              WHERE no = '${req.params.id}'`
   ivr.query(sql, function (response) {
-    if (response) res.status(200).json({ alert: alertError })
-    res.status(200).json({ alert: alertSuccess })
+    if (response) {
+      res.status(200).json({
+        alert: helper.alertToast(`SERVICE`, `Delete Service Error`,`danger`),
+      })
+    }
+    else {
+      res.status(200).json({
+        alert: helper.alertToast(`SERVICE`, `Delete Service Successfully`, `success`),
+      })
+    }
   })
 })
 
 router.get("/", jwt.verify, urlencodedParser, function (req, res, next) {
-  // let sql = `SELECT * FROM service_routing`
-  let sql = `SELECT 
-                  sr.service_id, 
-                  sr.service_action_id, 
-                  a.action_name AS Action, 
+  let sql = `SELECT
+                  sr.no,
+                  sr.service_id,
+                  sr.service_action_id,
+                  a.action_name AS Action,
                   sr.service_action_value ,
                   CASE
                     WHEN sr.service_action_id=1 THEN (SELECT annoucement_name FROM annoucements WHERE annoucement_id = sr.service_action_value)
                     WHEN sr.service_action_id=2 THEN (SELECT name FROM ivr_script WHERE ivr_id = sr.service_action_value)
+                    WHEN sr.service_action_id=6 THEN (SELECT time_condition_name FROM time_conditions WHERE time_id = sr.service_action_value)
                     ELSE sr.service_action_value
                   END as [Values]
               FROM service_routing sr
@@ -91,20 +106,22 @@ router.get("/", jwt.verify, urlencodedParser, function (req, res, next) {
 
 router.get("/:id", jwt.verify, urlencodedParser, function (req, res, next) {
   let id = req.params.id
-  // let sql = `SELECT * FROM service_routing WHERE service_id = ${id}`
   let sql = `SELECT 
+                  sr.no,
                   sr.service_id, 
                   sr.service_action_id, 
                   a.action_name AS Action, 
                   sr.service_action_value ,
                   CASE
-                    WHEN sr.service_action_id=1 THEN (SELECT voice_name FROM voice_config WHERE voice_id = sr.service_action_value)
-                    WHEN sr.service_action_id=2 THEN (SELECT name FROM ivr_script WHERE ivr_id = sr.service_action_value)
+                    WHEN sr.service_action_id=1 THEN ''
+                    WHEN sr.service_action_id=2 THEN ''
+                    WHEN sr.service_action_id=4 THEN ''
+                    WHEN sr.service_action_id=6 THEN ''
                     ELSE sr.service_action_value
                   END as [external] 
                 FROM service_routing sr
                   LEFT JOIN [action] a ON sr.service_action_id = a.action_id
-                WHERE service_id = ${id}`
+                WHERE no = ${id}`
   ivr.query(sql, function (response) {
     if (response.length) {
       res.status(200).json(response[0])

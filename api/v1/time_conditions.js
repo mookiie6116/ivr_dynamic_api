@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const jwt = require("../../models/jwt");
 const uuidv1 = require('uuid/v1');
 const moment = require('moment');
+const helper = require('../helper/helper')
 
 var urlencodedParser = bodyParser.urlencoded({
   extended: true
@@ -38,13 +39,21 @@ router.post("/", jwt.verify, urlencodedParser, function (req, res, next) {
                         time_match_action_id = '${time_match_action_id}',
                         time_match_action_value = '${time_match_action_value}',
                         time_notmatch_action_id = '${time_notmatch_action_id}',
-                        time_notmatch_action_value = '${time_notmatch_action_value}',      
+                        time_notmatch_action_value = '${time_notmatch_action_value}',
                         modified_by = '${uuid}',
                         modified_dt = '${modified_dt}'
                     WHERE time_id = '${req.body.time_id}'`
         ivr.query(sql, function (response) {
-          if (response) res.status(400).json({ alert: alertError })
-          res.status(200).json({ alert: alertSuccess })
+          if (response) {
+            res.status(200).json({
+              alert: helper.alertToast(`TIME CONDITIONS`, `Update Time Conditions Error`,`danger`),
+            })
+          }
+          else {
+            res.status(200).json({
+              alert: helper.alertToast(`TIME CONDITIONS`, `Update Time Conditions Successfully`, `success`),
+            })
+          }
         })
       }
     })
@@ -53,8 +62,16 @@ router.post("/", jwt.verify, urlencodedParser, function (req, res, next) {
       let sql = `INSERT INTO time_conditions (time_id, time_condition_name, time_service_id, time_match_action_id, time_match_action_value,time_notmatch_action_id,time_notmatch_action_value,created_by, created_dt,modified_by,modified_dt) 
       VALUES ('${time_id}', '${time_condition_name}', '${time_service_id}', '${time_match_action_id}', '${time_match_action_value}','${time_notmatch_action_id}','${time_notmatch_action_value}', '${created_by}', '${created_dt}', '${created_by}', '${created_dt}')`
       ivr.query(sql, function (response) {
-        if (response) res.status(400).json({ alert: alertError })
-        res.status(200).json({ alert: alertSuccess })
+        if (response) {
+          res.status(200).json({
+            alert: helper.alertToast(`TIME CONDITIONS`, `Create Time Conditions Error`,`danger`),
+          })
+        }
+        else {
+          res.status(200).json({
+            alert: helper.alertToast(`TIME CONDITIONS`, `Create Time Conditions Successfully`, `success`),
+          })
+        }
       })
     })
   })
@@ -95,13 +112,17 @@ router.get("/:id", jwt.verify, urlencodedParser, function (req, res, next) {
   let id = req.params.id
   let sql = `SELECT * ,
               CASE
-                WHEN time_match_action_id=1 THEN (SELECT voice_name FROM voice_config WHERE voice_id = time_match_action_value)
-                WHEN time_match_action_id=2 THEN (SELECT name FROM ivr_script WHERE ivr_id = time_match_action_value)
+                WHEN time_match_action_id=1 THEN ''
+                WHEN time_match_action_id=2 THEN ''
+                WHEN time_match_action_id=4 THEN ''
+                WHEN time_match_action_id=6 THEN ''
                 ELSE time_match_action_value
               END as [time_match_external] ,
               CASE
-                WHEN time_notmatch_action_id=1 THEN (SELECT voice_name FROM voice_config WHERE voice_id = time_notmatch_action_value)
-                WHEN time_notmatch_action_id=2 THEN (SELECT name FROM ivr_script WHERE ivr_id = time_notmatch_action_value)
+                WHEN time_notmatch_action_id=1 THEN ''
+                WHEN time_notmatch_action_id=2 THEN ''
+                WHEN time_notmatch_action_id=4 THEN ''
+                WHEN time_notmatch_action_id=6 THEN ''
                 ELSE time_notmatch_action_value
               END as [time_notmatch_external] 
               FROM time_conditions WHERE time_id = '${id}'`
@@ -123,8 +144,16 @@ router.delete("/:id", jwt.verify, urlencodedParser, function (req, res, next) {
                   modified_dt = '${modified_dt}' 
               WHERE time_id = '${req.params.id}'`
   ivr.query(sql, function (response) {
-    if (response) res.status(200).json({ alert: alertError })
-    res.status(200).json({ alert: alertSuccess })
+    if (response) {
+      res.status(200).json({
+        alert: helper.alertToast(`TIME CONDITIONS`, `Delete Time Conditions Error`,`danger`),
+      })
+    }
+    else {
+      res.status(200).json({
+        alert: helper.alertToast(`TIME CONDITIONS`, `Delete Time Conditions Successfully`, `success`),
+      })
+    }
   })
 })
 

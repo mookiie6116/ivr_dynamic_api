@@ -20,14 +20,27 @@ router.post("/", jwt.verify, urlencodedParser, function (req, res, next) {
     let sql = `SELECT uuid FROM users WHERE username = '${username}';`
     ivr.query(sql, function (response) {
       if (response.length == 0) { resolve() }
-      else { res.status(400).json('Duplicate username') }
+      else {
+        res.status(400).json({
+          alert: helper.alertToast(`USERS`, `Create Users Error`,`danger`)
+        })
+      }
     })
   }).then(json => {
     return new Promise((resolve, reject) => {
       let sql = `INSERT INTO users (uuid, username, password, fname, lname, created_dt, created_by) 
              VALUES ('${uuid}', '${username}', '${md5(password)}', '${fname}', '${lname}', '${created_dt}', '${created_by}')`
       ivr.query(sql, function (response) {
-        res.status(201).json()
+        if (response) {
+          res.status(200).json({
+            alert: helper.alertToast(`USERS`, `Create Users Error`,`danger`),
+          })
+        }
+        else {
+          res.status(200).json({
+            alert: helper.alertToast(`USERS`, `Create Users Successfully`, `success`),
+          })
+        }
       })
     })
   })
