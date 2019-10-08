@@ -11,7 +11,9 @@ var urlencodedParser = bodyParser.urlencoded({
 });
 
 router.post("/", jwt.verify, urlencodedParser, function (req, res, next) {
-  let { no, service_id, service_action_id, service_action_value } = req.body
+  let { no, service, service_action_id, service_action_value } = req.body
+  let service_id = service.id
+  let service_name = service.name
   let created_by = req.uuid;
   let created_dt = moment.utc().format('YYYY-MM-DD HH:mm:ss');
   let promise = new Promise((resolve, reject) => {
@@ -22,7 +24,8 @@ router.post("/", jwt.verify, urlencodedParser, function (req, res, next) {
         let uuid = req.uuid;
         let modified_dt = moment.utc().format('YYYY-MM-DD HH:mm:ss');
         let sql = ` UPDATE service_routing 
-                    SET service_action_id = '${service_action_id}', 
+                    SET service_name = '${service_name}',
+                        service_action_id = '${service_action_id}', 
                         service_action_value = '${service_action_value}', 
                         modified_by = '${uuid}', 
                         modified_dt = '${modified_dt}' 
@@ -43,8 +46,8 @@ router.post("/", jwt.verify, urlencodedParser, function (req, res, next) {
     })
   }).then(function (json) {
     return new Promise((resolve, reject) => {
-      let sql = `INSERT INTO service_routing (service_id, service_action_id, service_action_value, created_by, created_dt, modified_by, modified_dt) 
-                  VALUES ('${service_id}', '${service_action_id}', '${service_action_value}', '${created_by}', '${created_dt}', '${created_by}', '${created_dt}')`
+      let sql = `INSERT INTO service_routing (service_id, service_name, service_action_id, service_action_value, created_by, created_dt, modified_by, modified_dt) 
+                  VALUES ('${service_id}', '${service_name}', '${service_action_id}', '${service_action_value}', '${created_by}', '${created_dt}', '${created_by}', '${created_dt}')`
       ivr.query(sql, function (response) {
         if (response) {
           res.status(200).json({

@@ -11,5 +11,6 @@ router.use("/timeConditions", require("./time_conditions"));
 router.use("/script", require("./script"));
 router.use("/audio", require("./audio"));
 router.use("/master", require("./master"));
+router.use("/help", require("./helper"));
 // router.use('/',function (req, res) {res.send('hello')})
 module.exports = router;
