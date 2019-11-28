@@ -18,7 +18,7 @@ var urlencodedParser = bodyParser.urlencoded({
 });
 
 router.get("/category", jwt.verify, urlencodedParser, function (req, res, next) {
-  let sql = `SELECT * FROM voice_config_category WHERE isDelete = '0'`;
+  let sql = `SELECT * FROM voice_config_category WHERE isDelete = '0' ORDER BY name ASC`;
   ivr.query(sql, function (response) {
     res.status(200).json(response)
   })
@@ -30,14 +30,12 @@ router.get("/category/:id", jwt.verify, function (req, res, next) {
               FROM voice_config a
                 LEFT JOIN users b ON a.created_by = b.uuid
                 LEFT JOIN voice_config_category c ON a.category_id = c.id `
-  if (!req.params.id) {
+  if (req.params.id == 0) {
     sql += ` ORDER BY c.name,a.voice_name ASC`
   } else {
     sql += ` WHERE a.category_id = '${req.params.id}'
             ORDER BY c.name,a.voice_name ASC`
   }
-  console.log(sql);
-  
   ivr.query(sql, function (response) {
     res.status(200).json(response)
   })
@@ -117,9 +115,20 @@ router.get("/chk", jwt.verify, urlencodedParser, function (req, res, next) {
   })
 })
 
+router.get("/chk-category", jwt.verify, urlencodedParser, function (req, res, next) {
+  let sql = `SELECT * 
+             FROM voice_config_category 
+             WHERE name = '${req.query.name}' 
+                  AND id NOT IN ('${req.query.id}')
+                  AND isDelete = '0'`
+  ivr.query(sql, function (response) {
+    res.status(200).json(response.length)
+  })
+})
+
 router.post("/", jwt.verify, urlencodedParser, function (req, res, next) {
   //original code
-  let { voice_id, voice_name, audioName, voice_description, audio } = req.body
+  let { voice_id, voice_name, audioName, voice_description, audio, category_id } = req.body
   let created_by = req.uuid;
   let created_dt = moment.utc().format('YYYY-MM-DD HH:mm:ss');
   if (voice_id) {
@@ -141,8 +150,8 @@ router.post("/", jwt.verify, urlencodedParser, function (req, res, next) {
   } else {
     let voice_id = uuidv1()
     var newfile = `${voice_id}.${audioName.split(".")[1]}`;
-    let sql = `INSERT INTO voice_config (voice_id, voice_name, voice_description, voice_filename, voice_storage, created_dt, created_by, modified_dt, modified_by)
-            VALUES ('${voice_id}', '${voice_name}', '${voice_description == undefined ? "" : voice_description}','${newfile}', '${audio}', '${created_dt}', '${created_by}', '${created_dt}', '${created_by}')`
+    let sql = `INSERT INTO voice_config (voice_id, voice_name, voice_description, voice_filename, voice_storage, created_dt, created_by, modified_dt, modified_by, category_id)
+            VALUES ('${voice_id}', '${voice_name}', '${voice_description == undefined ? "" : voice_description}','${newfile}', '${audio}', '${created_dt}', '${created_by}', '${created_dt}', '${created_by}', '${category_id}')`
     ivr.query(sql, function (response) {
       if (response) res.status(200).json({
         alert: helper.alertToast(`VOICE`, `Upload Voice Error`, `danger`),
@@ -178,7 +187,7 @@ router.post("/upload/:id", jwt.verify, function (req, res, next) {
                         SET duration_time = '${duration}'
                         WHERE voice_id = '${req.params.id}'`
           ivr.query(sql, function (response) {
-            // ftp.upload(newpath, audio.name)
+            ftp.upload(newpath, newfile)
             res.status(204).send()
           })
         })
@@ -213,7 +222,7 @@ router.get("/:id", jwt.verify, function (req, res, next) {
   ivr.query(sql, function (response) {
     if (response.length) {
       res.status(200).json(response[0])
-    }else{
+    } else {
       res.status(200).json(response)
     }
   })

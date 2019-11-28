@@ -11,7 +11,7 @@ var urlencodedParser = bodyParser.urlencoded({
 });
 
 router.get("/category", jwt.verify, urlencodedParser, function (req, res, next) {
-  let sql = `SELECT * FROM service_routing_category WHERE isDelete = '0'`;
+  let sql = `SELECT * FROM service_routing_category WHERE isDelete = '0' ORDER BY name ASC`;
   ivr.query(sql, function (response) {
     res.status(200).json(response)
   })
@@ -60,7 +60,8 @@ router.post("/category", jwt.verify, urlencodedParser, function (req, res, next)
 
     })
   } else {
-    let sql = `INSERT INTO service_routing_category (name,modified_dt) VALUES ('${name}','${modified_dt}')`
+    helper.checkAILastId('service_routing_category', 'id', function (params) {
+    let sql = `INSERT INTO service_routing_category (id,name,modified_dt) VALUES ('${params}','${name}','${modified_dt}')`
     ivr.query(sql, function (response) {
       if (response) res.status(200).json({
         alert: helper.alertToast(`SERVICE`, `Create Category Error`, `danger`),
@@ -69,6 +70,7 @@ router.post("/category", jwt.verify, urlencodedParser, function (req, res, next)
         alert: helper.alertToast(`SERVICE`, `Create Category Successfully`, `success`),
       })
     })
+  })
   }
 })
 
@@ -101,6 +103,17 @@ router.get("/chkDel/:category_id", jwt.verify, urlencodedParser, function (req, 
 
 router.get("/chk", jwt.verify, urlencodedParser,function (req, res, next) {
   let sql = `SELECT * FROM service_routing WHERE service_id = '${req.query.service_id}' AND isDelete = '0'`
+  ivr.query(sql, function (response) {
+    res.status(200).json(response.length)
+  })
+})
+
+router.get("/chk-category", jwt.verify, urlencodedParser, function (req, res, next) {
+  let sql = `SELECT * 
+             FROM service_routing_category 
+             WHERE name = '${req.query.name}' 
+              AND id NOT IN ('${req.query.id}')
+              AND isDelete = '0'`
   ivr.query(sql, function (response) {
     res.status(200).json(response.length)
   })

@@ -2,13 +2,13 @@ let Client = require('ssh2-sftp-client');
 const configs = require('config');
 const fs = require("fs")
 let sftp = new Client();
-// const config = configs.get('ftp');
-const config ={
-  "host": "172.18.8.21",
-  "port": "22",
-  "username": "root",
-  "password": "aspect"
-}
+const config = configs.get('ftp');
+// const config ={
+//   "host": "172.18.8.21",
+//   "port": "22",
+//   "username": "root",
+//   "password": "aspect"
+// }
 const ftp_path = configs.get('ftp_path');
 const ftp_option = configs.get('ftp_options');
 module.exports = {
@@ -27,11 +27,21 @@ module.exports = {
     let dataFile = fs.createReadStream(localFilePath);
     
     // sftp.connect(config).then((data) => {
-      sftp.put(dataFile, `${ftp_path}/${filename}`).then((res) => {
-        console.log(res, 'then');
+      sftp.put(dataFile, `${ftp_path}/${filename}`)
+      .then((res) => {
+        console.log(`${ftp_path}/${filename}`, 'upload');
       }).catch((err) => {
-        console.log(err, 'catch error');
+        console.log(`${ftp_path}/${filename}`, 'upload error');
       })
     // })
+  },
+  delete: function (filename) {
+    sftp.delete(`${ftp_path}/${filename}`)
+    .then(() => {
+      console.log(`${ftp_path}/${filename}`, 'delete');
+    })
+    .catch(err => {
+      console.log(`${ftp_path}/${filename}`, 'delete error');
+    });
   }
 }

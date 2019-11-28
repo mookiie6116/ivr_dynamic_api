@@ -12,7 +12,7 @@ var urlencodedParser = bodyParser.urlencoded({
 });
 
 router.get("/category", jwt.verify, urlencodedParser, function (req, res, next) {
-  let sql = `SELECT * FROM annoucements_category WHERE isDelete = '0'`;
+  let sql = `SELECT * FROM annoucements_category WHERE isDelete = '0' ORDER BY name ASC`;
   ivr.query(sql, function (response) {
     res.status(200).json(response)
   })
@@ -40,7 +40,7 @@ router.get("/category/:id", jwt.verify, urlencodedParser, function (req, res, ne
                     LEFT JOIN [action] d ON a.action_id = d.action_id
                     LEFT JOIN annoucements_category e ON a.category_id = e.id
               WHERE a.isDelete = '0'`
-  if (!req.params.id) {
+  if (req.params.id == 0) {
     sql += ` ORDER BY e.name,a.annoucement_name ASC`
   } else {
     sql += ` AND a.category_id = '${req.params.id}'
@@ -88,42 +88,119 @@ router.post("/category", jwt.verify, urlencodedParser, function (req, res, next)
 })
 
 router.delete("/category/:id", jwt.verify, urlencodedParser, function (req, res, next) {
+  let uuid = req.uuid;
   let modified_dt = moment.utc().format('YYYY-MM-DD HH:mm:ss');
-  let sql = ` UPDATE annoucements_category 
-              SET isDelete = '1', 
-                  modified_dt = '${modified_dt}' 
-              WHERE id = '${req.params.id}'`
-  ivr.query(sql, function (response) {
-    if (response) {
-      res.status(200).json({
-        alert: helper.alertToast(`ANNOUCEMENTS`, `Delete Annoucements Category Error`, `danger`),
-      })
-    }
-    else {
-      res.status(200).json({
-        alert: helper.alertToast(`ANNOUCEMENTS`, `Delete Annoucements Category Successfully`, `success`),
-      })
-    }
+  return new Promise((resolve, reject) => {
+    let sql = ` UPDATE annoucements_category 
+                SET isDelete = '1', 
+                    modified_dt = '${modified_dt}' 
+                WHERE id = '${req.params.id}'`
+    ivr.query(sql, function (response) {
+      if (response) {
+        reject()
+      }
+      else {
+        resolve()
+      }
+    })
+  }).then(json => {
+    let sql_chk = `SELECT annoucement_id as id FROM annoucements WHERE isDelete = '0' AND category_id = '${req.params.id}'`
+    ivr.query(sql_chk, function (response) {
+      for (let i = 0, p = Promise.resolve(); i <= response.length; i++) {
+        p = p.then(_ => new Promise(res => {
+          if (i < response.length) {
+            let element = response[i]
+            let sql = ` UPDATE annoucements 
+                        SET isDelete = '1', 
+                            modified_by = '${uuid}', 
+                            modified_dt = '${modified_dt}' 
+                        WHERE annoucement_id = '${element.id}'`
+            ivr.query(sql, function (response) {
+              if (response) { reject() }
+              else { res() }
+            })
+          }
+          else {
+            resolve()
+          }
+        }))
+      }//end loop
+    })
+  }).then(json => {
+    res.status(200).json({
+      alert: helper.alertToast(`ANNOUCEMENTS`, `Delete Annoucements Category Successfully`, `success`),
+    })
+  }).catch(json => {
+    res.status(200).json({
+      alert: helper.alertToast(`ANNOUCEMENTS`, `Delete Annoucements Category Error`, `danger`),
+    })
   })
 })
+
+// router.delete("/category/:id", jwt.verify, urlencodedParser, function (req, res, next) {
+//   let modified_dt = moment.utc().format('YYYY-MM-DD HH:mm:ss');
+//   let sql = ` UPDATE annoucements_category 
+//               SET isDelete = '1', 
+//                   modified_dt = '${modified_dt}' 
+//               WHERE id = '${req.params.id}'`
+//   ivr.query(sql, function (response) {
+//     if (response) {
+//       res.status(200).json({
+//         alert: helper.alertToast(`ANNOUCEMENTS`, `Delete Annoucements Category Error`, `danger`),
+//       })
+//     }
+//     else {
+//       res.status(200).json({
+//         alert: helper.alertToast(`ANNOUCEMENTS`, `Delete Annoucements Category Successfully`, `success`),
+//       })
+//     }
+//   })
+// })
 
 router.get("/chkDel/:category_id", jwt.verify, urlencodedParser, function (req, res, next) {
-  let sql_chk = `SELECT count(annoucement_id) AS count FROM annoucements WHERE isDelete = '0' AND category_id = '${req.params.category_id}'`
-  ivr.query(sql_chk, function (response) {
-    res.status(200).json(response[0].count)
+  return new Promise((resolve, reject) => {
+    let sql_chk = `SELECT annoucement_id as id FROM annoucements WHERE isDelete = '0' AND category_id = '${req.params.category_id}'`
+    ivr.query(sql_chk, function (response) {
+      for (let i = 0, p = Promise.resolve(); i <= response.length; i++) {
+        p = p.then(_ => new Promise(res => {
+          if (i < response.length) {
+            helper.checkUsedObj(response[i].id, function (params) {
+              if (params.length > 0) {
+                reject()
+              } else {
+                res()
+              }
+            })
+          }
+          else {
+            resolve()
+          }
+        }))
+      }//end for
+    })
+  }).then(json => {
+    res.status(200).json(0)
+  }).catch(json => {
+    res.status(200).json(1)
   })
 })
 
+// router.get("/chkDel/:category_id", jwt.verify, urlencodedParser, function (req, res, next) {
+//   let sql_chk = `SELECT count(annoucement_id) AS count FROM annoucements WHERE isDelete = '0' AND category_id = '${req.params.category_id}'`
+//   ivr.query(sql_chk, function (response) {
+//     res.status(200).json(response[0].count)
+//   })
+// })
+
 router.post('/duplicate', jwt.verify, urlencodedParser, function (req, res, next) {
-  let { id, name } = req.body;
+  let { id, name, copyName } = req.body;
   let created_by = req.uuid;
   let modified_dt = moment.utc().format('YYYY-MM-DD HH:mm:ss');
   let promise = new Promise((resolve, reject) => {
-    let sql_chkName = `SELECT * FROM annoucements_category WHERE name = '${name}' OR name like 'copy ${name}(%'`
+    let sql_chkName = `SELECT * FROM annoucements_category WHERE isDelete = '0' AND (name = '${name}' OR name like '${name} %')`
     ivr.query(sql_chkName, function (response) {
-      let category_name = `copy ${name}(${response.length})`
       helper.checkAILastId('annoucements_category', 'id', function (params) {
-        let sql = `INSERT INTO annoucements_category (id,name,modified_dt) VALUES (${params},'${category_name}','${modified_dt}')`
+        let sql = `INSERT INTO annoucements_category (id,name,modified_dt) VALUES (${params},'${copyName}','${modified_dt}')`
         ivr.query(sql, function (response) {
           resolve(params)
         })
@@ -172,6 +249,17 @@ router.get("/chk", jwt.verify, urlencodedParser, function (req, res, next) {
                   AND category_id = '${req.query.category_id}' 
                   AND isDelete = '0' 
                   AND annoucement_id NOT IN ('${req.query.annoucement_id}')`
+  ivr.query(sql, function (response) {
+    res.status(200).json(response.length)
+  })
+})
+
+router.get("/chk-category", jwt.verify, urlencodedParser, function (req, res, next) {
+  let sql = `SELECT * 
+             FROM annoucements_category 
+             WHERE name = '${req.query.name}' 
+                  AND id NOT IN ('${req.query.id}')
+                  AND isDelete = '0'`
   ivr.query(sql, function (response) {
     res.status(200).json(response.length)
   })

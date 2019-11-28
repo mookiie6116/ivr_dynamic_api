@@ -20,5 +20,11 @@ module.exports = {
         callback(1)
       }
     })
+  },
+  checkUsedObj: function (id, callback) {
+    let sql = `EXEC spCheckDelete '${id}'`
+    ivr.query(sql, function (response) {
+      callback(response)
+    })
   }
 }

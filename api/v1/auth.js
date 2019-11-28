@@ -23,6 +23,7 @@ router.post("/login", urlencodedParser, function (req, res, next) {
     } else {
       res.status(200).json({
         alert: helper.alertToast(`LOGIN`, `Username OR Password Incorrect`,`danger`),
+        token: ''
       })
     }
   })
