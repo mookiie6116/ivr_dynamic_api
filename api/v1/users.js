@@ -6,6 +6,7 @@ const jwt = require("../../models/jwt");
 const uuidv1 = require('uuid/v1');
 const moment = require('moment');
 const md5 = require("md5")
+const helper = require("../helper/helper")
 
 var urlencodedParser = bodyParser.urlencoded({
   extended: true
@@ -22,7 +23,7 @@ router.post("/", jwt.verify, urlencodedParser, function (req, res, next) {
       if (response.length == 0) { resolve() }
       else {
         res.status(400).json({
-          alert: helper.alertToast(`USERS`, `Create Users Error`,`danger`)
+          alert: helper.alertToast(`USERS`, `Username duplicate`,`danger`)
         })
       }
     })

@@ -41,10 +41,10 @@ router.get("/category/:id", jwt.verify, urlencodedParser, function (req, res, ne
                     LEFT JOIN annoucements_category e ON a.category_id = e.id
               WHERE a.isDelete = '0'`
   if (req.params.id == 0) {
-    sql += ` ORDER BY e.name,a.annoucement_name ASC`
+    sql += ` ORDER BY e.name, a.annoucement_name ASC`
   } else {
     sql += ` AND a.category_id = '${req.params.id}'
-            ORDER BY e.name,a.annoucement_name ASC`
+            ORDER BY a.annoucement_name ASC`
   }
   ivr.query(sql, function (response) {
     res.status(200).json(response)

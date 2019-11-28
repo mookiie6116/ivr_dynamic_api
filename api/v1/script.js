@@ -36,7 +36,7 @@ router.get("/category/:id", jwt.verify, urlencodedParser, function (req, res, ne
     sql += ` ORDER BY d.name,a.name ASC`
   } else {
     sql += ` AND a.category_id = '${req.params.id}'
-            ORDER BY d.name,a.name ASC`
+            ORDER BY a.name ASC`
   }
 
   ivr.query(sql, function (response) {
@@ -329,7 +329,7 @@ router.post("/", jwt.verify, urlencodedParser, function (req, res, next) {
                   SET name = '${name}',
                       description = '${description == undefined ? "" : description}',
                       voice_id = '${voice_id}',
-                      timeout = '${timeout}',
+                      timeout = '${parseInt(timeout)}',
                       invalid_retries = '${invalid_retries}',
                       invalid_retries_voice_id = '${invalid_retries_voice_id}',
                       invalid_voice_id = '${invalid_voice_id}',
@@ -380,7 +380,7 @@ router.post("/", jwt.verify, urlencodedParser, function (req, res, next) {
     let promise = new Promise((resolve, reject) => {
       let ivr_id = uuidv1()
       let sql = `INSERT INTO ivr_script (ivr_id, name, description, voice_id, timeout, invalid_retries, invalid_retries_voice_id, invalid_voice_id, invalid_action_id, invalid_action_value, timeout_retries, timeout_retries_voice_id, timeout_voice_id, timeout_action_id, timeout_action_value, created_by, created_dt,modified_by,modified_dt,category_id) 
-        VALUES ('${ivr_id}', '${name}', '${description == undefined ? "" : description}', '${voice_id}', '${timeout}', '${invalid_retries}', '${invalid_retries_voice_id}', '${invalid_voice_id}', '${invalid_action.key_action_id}', '${invalid_action.key_action_value}', '${timeout_retries}', '${timeout_retries_voice_id}', '${timeout_voice_id}', '${timeout_action.key_action_id}', '${timeout_action.key_action_value}', '${created_by}', '${created_dt}',  '${created_by}', '${created_dt}','${category_id}')`
+        VALUES ('${ivr_id}', '${name}', '${description == undefined ? "" : description}', '${voice_id}', '${parseInt(timeout)}', '${invalid_retries}', '${invalid_retries_voice_id}', '${invalid_voice_id}', '${invalid_action.key_action_id}', '${invalid_action.key_action_value}', '${timeout_retries}', '${timeout_retries_voice_id}', '${timeout_voice_id}', '${timeout_action.key_action_id}', '${timeout_action.key_action_value}', '${created_by}', '${created_dt}',  '${created_by}', '${created_dt}','${category_id}')`
       ivr.query(sql, function (response) {
         resolve(ivr_id)
       })

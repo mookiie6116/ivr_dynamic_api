@@ -10,13 +10,13 @@ var urlencodedParser = bodyParser.urlencoded({
 });
 
 router.get("/action", jwt.verify, urlencodedParser, function (req, res, next) {
-  let sql = `SELECT * FROM action`
+  let sql = `SELECT * FROM action WHERE isDelete = '0'`
   ivr.query(sql, function (response) {
     res.status(200).json(response)
   })
 })
 router.get("/key", jwt.verify, urlencodedParser, function (req, res, next) {
-  let sql = `SELECT * FROM keyphone`
+  let sql = `SELECT * FROM keyphone WHERE isDelete = '0'`
   ivr.query(sql, function (response) {
     res.status(200).json(response)
   })

@@ -29,10 +29,14 @@ router.get("/category/:id", jwt.verify, urlencodedParser, function (req, res, ne
                     WHEN sr.service_action_id=2 THEN (SELECT name FROM ivr_script WHERE ivr_id = sr.service_action_value)
                     WHEN sr.service_action_id=6 THEN (SELECT time_condition_name FROM time_conditions WHERE time_id = sr.service_action_value)
                     ELSE sr.service_action_value
-                  END as [Values]
+                  END as [Values],
+                  CONCAT(b.fname,' ',b.lname) AS name_created,
+                  CONCAT(c.fname,' ',c.lname) AS name_modified
               FROM service_routing sr
               LEFT JOIN [action] a ON sr.service_action_id = a.action_id
-              WHERE isDelete = '0' AND category_id = '${req.params.id}'`
+              LEFT JOIN users b ON sr.created_by = b.uuid
+              LEFT JOIN users c ON sr.modified_by = c.uuid
+              WHERE sr.isDelete = '0' AND category_id = '${req.params.id}'`
   ivr.query(sql, function (response) {
     res.status(200).json(response)
   })
@@ -76,9 +80,11 @@ router.post("/category", jwt.verify, urlencodedParser, function (req, res, next)
 
 router.delete("/category/:id", jwt.verify, urlencodedParser, function (req, res, next) {
   let modified_dt = moment.utc().format('YYYY-MM-DD HH:mm:ss');
+  let uuid = req.uuid;
   let sql = ` UPDATE service_routing_category 
               SET isDelete = '1', 
-                  modified_dt = '${modified_dt}' 
+                  modified_dt = '${modified_dt}'
+                  modified_by = '${uuid}'
               WHERE id = '${req.params.id}'`
   ivr.query(sql, function (response) {
     if (response) {
@@ -102,7 +108,7 @@ router.get("/chkDel/:category_id", jwt.verify, urlencodedParser, function (req, 
 })
 
 router.get("/chk", jwt.verify, urlencodedParser,function (req, res, next) {
-  let sql = `SELECT * FROM service_routing WHERE service_id = '${req.query.service_id}' AND isDelete = '0'`
+  let sql = `SELECT * FROM service_routing WHERE  isDelete = '0' AND service_id NOT IN '(${req.query.service_id})'`
   ivr.query(sql, function (response) {
     res.status(200).json(response.length)
   })

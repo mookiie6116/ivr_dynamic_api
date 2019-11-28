@@ -26,15 +26,17 @@ router.get("/category", jwt.verify, urlencodedParser, function (req, res, next) 
 
 router.get("/category/:id", jwt.verify, function (req, res, next) {
   let sql = `SELECT a.*,c.name as category,
-                CONCAT(b.fname,' ',b.lname) AS name_created
+                CONCAT(bc.fname,' ',bc.lname) AS name_created,
+                CONCAT(bm.fname,' ',bm.lname) AS name_modified
               FROM voice_config a
-                LEFT JOIN users b ON a.created_by = b.uuid
+                LEFT JOIN users bc ON a.created_by = bc.uuid
+                LEFT JOIN users bm ON a.modified_by = bm.uuid
                 LEFT JOIN voice_config_category c ON a.category_id = c.id `
   if (req.params.id == 0) {
     sql += ` ORDER BY c.name,a.voice_name ASC`
   } else {
     sql += ` WHERE a.category_id = '${req.params.id}'
-            ORDER BY c.name,a.voice_name ASC`
+            ORDER BY a.voice_name ASC`
   }
   ivr.query(sql, function (response) {
     res.status(200).json(response)

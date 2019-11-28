@@ -77,7 +77,7 @@ router.get("/category/:id", jwt.verify, urlencodedParser, function (req, res, ne
     sql += ` ORDER BY d.name,a.time_condition_name ASC`
   } else {
     sql += ` AND a.category_id = '${req.params.id}'
-            ORDER BY d.name,a.time_condition_name ASC`
+            ORDER BY a.time_condition_name ASC`
   }
   ivr.query(sql, function (response) {
     res.status(200).json(response)
