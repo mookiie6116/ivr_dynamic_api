@@ -27,6 +27,7 @@ router.get("/category/:id", jwt.verify, urlencodedParser, function (req, res, ne
                   CASE
                     WHEN sr.service_action_id=1 THEN (SELECT annoucement_name FROM annoucements WHERE annoucement_id = sr.service_action_value)
                     WHEN sr.service_action_id=2 THEN (SELECT name FROM ivr_script WHERE ivr_id = sr.service_action_value)
+                    WHEN sr.service_action_id=3 THEN ''
                     WHEN sr.service_action_id=6 THEN (SELECT time_condition_name FROM time_conditions WHERE time_id = sr.service_action_value)
                     ELSE sr.service_action_value
                   END as [Values],
